@@ -50,8 +50,6 @@ struct  list
 private:
     template<bool is_const> class Iterator;
 
-    static_assert(std::is_base_of_v<list_element<Tag>, T>,
-                    "Your type must be derived from list_element");
     static_assert ( std :: is_convertible_v < T &, list_element < Tag > &>,
                     "value type is not convertible to list_element");
 
