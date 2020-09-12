@@ -19,7 +19,7 @@ struct  list_element
     list_element * next;
     list_element * prev;
 
-    list_element() = default;
+    list_element() : next(this), prev(this) { }
 
     void link(list_element * prev, list_element * next)
     {
@@ -35,11 +35,12 @@ struct  list_element
         this->next->prev = prev;
         this->prev->next = next;
 
-        this->prev = this->next = nullptr;
+        this->prev = this->next = this;
     }
 
     ~list_element() {
-    }
+        unlink();
+    };
 };
 
 
@@ -65,12 +66,8 @@ public:
     list ( list  const &) = delete ;
     list ( list && other) noexcept
     {
-        if (other.empty()) {
-            clear();
-        } else {
-            m_fake_node.link(other.m_fake_node.prev, other.m_fake_node.next);;
-            other.clear();
-        }
+        m_fake_node.next = m_fake_node.prev = &m_fake_node;
+        operator=(std::move(other));
     }
     ~ list () {
     }
@@ -94,22 +91,16 @@ public:
         we accept non-const T &.
     */
     void  push_back ( T & element) noexcept
-    {
-        static_cast<list_element<Tag> &>(element).link(m_fake_node.prev, &m_fake_node);
-    }
+    { static_cast<list_element<Tag> &>(element).link(m_fake_node.prev, &m_fake_node); }
+    void  pop_back () noexcept { m_fake_node.prev->unlink(); }
 
-    void  pop_back () noexcept
-    {
-        m_fake_node.prev->unlink();
-    }
     T & back () noexcept { return static_cast<T &>(*m_fake_node.prev); }
     T  const & back () const  noexcept { return static_cast<T const &>(*m_fake_node.prev); }
 
     void  push_front ( T & element) noexcept
-    {
-        static_cast<list_element<Tag> &>(element).link(&m_fake_node, m_fake_node.next);
-    }
+    { static_cast<list_element<Tag> &>(element).link(&m_fake_node, m_fake_node.next); }
     void  pop_front () noexcept { m_fake_node.next->unlink(); }
+
     T & front () noexcept { return static_cast<T &>(*m_fake_node.next); }
     T  const & front () const  noexcept { return static_cast<T const &>(*m_fake_node.next); }
 
@@ -200,7 +191,7 @@ private:
         }
 
         bool operator == (const Iterator & rhs) const noexcept { return m_element == rhs.m_element; }
-        bool operator != (const Iterator & rhs) const noexcept { return !operator==(rhs); }
+        bool operator != (const Iterator & rhs) const noexcept { return m_element != rhs.m_element; }
 
     private:
         list_element<Tag> * m_element;
