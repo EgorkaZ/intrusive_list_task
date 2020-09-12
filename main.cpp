@@ -7,6 +7,7 @@ struct node : intrusive::list_element<>
     explicit node(int value)
         : value(value)
     {}
+    node(const node &) = delete;
 
     int value;
 };
