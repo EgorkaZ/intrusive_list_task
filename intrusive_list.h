@@ -75,6 +75,9 @@ public:
     list & operator = ( list  const &) = delete ;
     list & operator = ( list && other) noexcept
     {
+        if (&other == this) {
+            return *this;
+        }
         if (other.empty()) {
             clear();
         } else {
@@ -158,7 +161,8 @@ private:
 
         Iterator() = default;
 
-        template<bool is_other_const>
+        // enable if other's constness is not weaker then current
+        template<bool is_other_const, std::enable_if_t<!is_other_const || is_const, int> = 0>
         Iterator(const Iterator<is_other_const> & other) : m_element(other.m_element) { }
 
         ~Iterator() = default;

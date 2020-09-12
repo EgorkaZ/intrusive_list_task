@@ -863,6 +863,24 @@ TEST(intrusive_list_testing, multiple_tags)
     expect_eq(list_b, {3, 2, 1});
 }
 
+TEST(intrusive_list_testing, simple_move)
+{
+    intrusive::list<node> lst;
+    node x1{1}, x2{2}, x3{3};
+    mass_push_back(lst, x1, x2, x3);
+    expect_eq(lst, {1, 2, 3});
+    lst = std::move(lst);
+    expect_eq(lst, {1, 2, 3});
+}
+
+TEST(intrusive_list_testing, iterator_copy_constr)
+{
+    using iterator = typename intrusive::list<node>::iterator;
+    using const_iterator = typename intrusive::list<node>::const_iterator;
+    static_assert(std::is_convertible<iterator, const_iterator>::value, "iterator should be convertible to const_iterator");
+    static_assert(!std::is_convertible<const_iterator, iterator>::value, "const_iterator shouldn't be convertible to iterator");
+}
+
 int main(int argc, char** argv)
 {
     testing::InitGoogleTest(&argc, argv);
